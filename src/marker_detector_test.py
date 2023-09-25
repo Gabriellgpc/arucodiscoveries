@@ -2,7 +2,7 @@
 # @Author: Luis Condados
 # @Date:   2023-06-11 21:01:43
 # @Last Modified by:   Luis Condados
-# @Last Modified time: 2023-09-23 01:54:10
+# @Last Modified time: 2023-09-23 02:02:49
 
 import cv2
 import numpy as np

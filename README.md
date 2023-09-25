@@ -4,6 +4,10 @@ Welcome to the Aruco Marker Exploration Repository! 🚀
 
 This repository is your gateway to the exciting world of Aruco markers, where we dive into various applications and techniques, from simple VR experiences to camera calibration and precision benchmarking.
 
+# Aruco Marker Generator
+
+https://chev.me/arucogen/
+
 ## What's Inside
 
 - **VR Adventures**: Explore how Aruco markers can add a touch of magic to your Virtual Reality projects. Dive into immersive experiences like never before!
