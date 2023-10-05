@@ -49,37 +49,37 @@ def detect_pose(config, image, camera_matrix, dist_coeffs):
                                                                                            board)
 
         cv2.aruco.drawDetectedMarkers(undistorted_image, marker_corners, marker_ids)
-        for i, marker_id in enumerate(marker_ids):
-            rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(marker_corners[i], 30/1000.0, camera_matrix, dist_coeffs)
-            print('marker_corners[i]', marker_corners[i])
-            print('marker_corners[i].shape', marker_corners[i].shape)
-            for corner in marker_corners[i].reshape(-1,2):
-                cv2.circle(undistorted_image, tuple(np.int32(corner)), 2, (0,255,255), -1)
-            cv2.drawFrameAxes(undistorted_image,
-                              camera_matrix,
-                              dist_coeffs,
-                              rvec,
-                              tvec,
-                              0.02)
-            square_size = 15/1000.0
-            axisBoxes = np.float32([
-                                    [-square_size, square_size, 0],
-                                    [square_size, square_size, 0],
-                                    [square_size,-square_size, 0],
-                                    [-square_size,-square_size, 0],
-                                    [-square_size, square_size, 2*square_size],
-                                    [square_size, square_size, 2*square_size],
-                                    [square_size,-square_size, 2*square_size],
-                                    [-square_size,-square_size, 2*square_size],
-                                   ]
-                                    )
-            # project 3D points to image plane
-            imgpts, jac = cv2.projectPoints(axisBoxes, rvec, tvec, camera_matrix, dist_coeffs)
-            imgpts = imgpts.astype('int32').reshape(-1, 2)
-            drawBoxes(undistorted_image, marker_corners[i], imgpts)
+        # for i, marker_id in enumerate(marker_ids):
+        #     rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(marker_corners[i], 30/1000.0, camera_matrix, dist_coeffs)
+
+        #     for corner in marker_corners[i].reshape(-1,2):
+        #         cv2.circle(undistorted_image, tuple(np.int32(corner)), 2, (0,255,255), -1)
+
+        #     cv2.drawFrameAxes(undistorted_image,
+        #                       camera_matrix,
+        #                       dist_coeffs,
+        #                       rvec,
+        #                       tvec,
+        #                       0.02)
+        #     square_size = 15/1000.0
+        #     axisBoxes = np.float32([
+        #                             [-square_size, square_size, 0],
+        #                             [square_size, square_size, 0],
+        #                             [square_size,-square_size, 0],
+        #                             [-square_size,-square_size, 0],
+        #                             [-square_size, square_size, 2*square_size],
+        #                             [square_size, square_size, 2*square_size],
+        #                             [square_size,-square_size, 2*square_size],
+        #                             [-square_size,-square_size, 2*square_size],
+        #                            ]
+        #                             )
+        #     # project 3D points to image plane
+        #     imgpts, jac = cv2.projectPoints(axisBoxes, rvec, tvec, camera_matrix, dist_coeffs)
+        #     imgpts = imgpts.astype('int32').reshape(-1, 2)
+        #     drawBoxes(undistorted_image, marker_corners[i], imgpts)
 
 
-    # If enough corners are found, estimate the pose
+        # If enough corners are found, estimate the pose
         if charuco_retval:
             retval, rvec, tvec = cv2.aruco.estimatePoseCharucoBoard(charuco_corners,
                                                                     charuco_ids,
@@ -108,6 +108,7 @@ def test_on_images_dir():
     # Load calibration data
     camera_matrix = np.load('/home/lcondados/workspace/arucodiscoveries/assets/camera_matrix.npy')
     dist_coeffs = np.load('/home/lcondados/workspace/arucodiscoveries/assets/dist_coeffs.npy')
+
     # images dir
     images_dir = '/home/lcondados/workspace/arucodiscoveries/assets/frames'
 
@@ -135,10 +136,18 @@ def test_on_images_dir():
         cv2.imshow('Pose Image', pose_image)
         cv2.waitKey(0)
 
-def test_on_video():
+def test_on_video(camera_matrix, dist_coeffs):
     # Load calibration data
-    camera_matrix = np.load('/home/lcondados/workspace/arucodiscoveries/assets/camera_matrix.npy')
-    dist_coeffs = np.load('/home/lcondados/workspace/arucodiscoveries/assets/dist_coeffs.npy')
+    # camera_matrix = np.load('/home/lcondados/workspace/arucodiscoveries/assets/camera_matrix.npy')
+    # dist_coeffs = np.load('/home/lcondados/workspace/arucodiscoveries/assets/dist_coeffs.npy')
+
+    # camera_matrix = [ [4.9009069483051633e+02, 0., 3.0956707314606535e+02],
+    #                   [0., 4.9390578842586643e+02, 2.2793033707805728e+02],
+    #                   [0., 0., 1.]]
+    # dist_coeffs   = [ 1.9925847266567022e-02, 5.5129794396036595e-02, -2.2374504516893151e-03, -1.2582988830223208e-02, -1.6836326603790266e-01 ]
+
+    camera_matrix = np.array(camera_matrix).reshape(3,3)
+    dist_coeffs   = np.array(dist_coeffs).reshape(1,5)
 
     config = {}
     config['ARUCO_DICT'] = cv2.aruco.DICT_4X4_50
@@ -147,12 +156,11 @@ def test_on_video():
     config['SQUARE_LENGTH'] = 30 / 1000.0
     config['MARKER_LENGTH'] = 15 / 1000.0
 
-    video = cv2.VideoCapture('/dev/video0')
+    video = cv2.VideoCapture(0)
 
     while True:
         ret, frame = video.read()
         if ret == False: break
-        # frame = frame[:,::-1,:]
 
         undistorted_image = detect_pose(config, frame, camera_matrix, dist_coeffs)
 
@@ -162,5 +170,8 @@ def test_on_video():
             break
 
 if __name__ == '__main__':
+    camera_matrix = np.load('assets/webcam_parameters/camera_matrix.npy')
+    dist_coeffs = np.load('assets/webcam_parameters/dist_coeffs.npy')
+
     # test_on_images_dir()
-    test_on_video()
+    test_on_video(camera_matrix, dist_coeffs)
